@@ -1,0 +1,25 @@
+[package]
+name = "terminal-ssr"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+# Common
+serde = { version = "1.0.137", features = ["derive"] }
+serde_json = "1.0.80"
+tokio =  { version = "1.18.0", features = ["full"] }
+parking_lot = "0.12.0"
+
+# Server
+axum = "0.5.4"
+tracing = "0.1.34"
+tracing-subscriber = { version = "0.3.11", features = ["env-filter"] }
+futures = "0.3.21"
+tokio-stream = "0.1.8"
+
+# TUI
+yansi = "0.5.1"
+sysinfo = "0.23.12"
