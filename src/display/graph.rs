@@ -15,7 +15,10 @@ pub fn render(info: SystemInfo) -> String {
 
     let header = format!(
         "{}",
-        Paint::cyan(format!("\x1B[1000DDevice: {} @ {}", info.host_name, info.os)),
+        Paint::cyan(format!(
+            "\x1B[1000DDevice: {} @ {}",
+            info.host_name, info.os
+        )),
     );
     let uptime = format!(
         "{}",
@@ -28,7 +31,10 @@ pub fn render(info: SystemInfo) -> String {
     );
     let memory_stats = format!(
         "{}\n\x1B[1000D{}",
-        Paint::red(format!("\x1B[1000DMemory: {}%", &info.memory_usage.to_string())),
+        Paint::red(format!(
+            "\x1B[1000DMemory: {}%",
+            &info.memory_usage.to_string()
+        )),
         progress_bar(&info.memory_usage)
     );
 

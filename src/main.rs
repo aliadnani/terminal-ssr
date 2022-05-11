@@ -1,7 +1,4 @@
-use std::{
-    net::SocketAddr,
-    sync::{Arc},
-};
+use std::{net::SocketAddr, sync::Arc};
 
 use axum::{routing::get, Extension, Router, Server};
 use parking_lot::Mutex;
