@@ -1,7 +1,6 @@
 use std::{
     convert::Infallible,
-    sync::{Arc, Mutex, RwLock},
-    time::Duration,
+    time::Duration, sync::Arc,
 };
 
 use axum::{
@@ -9,23 +8,27 @@ use axum::{
     Extension,
 };
 use futures::stream::{self, Stream};
-use sysinfo::{ProcessorExt, System, SystemExt};
+use parking_lot::Mutex;
+use sysinfo::{System};
 use tokio_stream::StreamExt as _;
 
 use crate::{
     display,
-    telemetry::sys::{get_info, SystemInfo},
+    telemetry::sys::{get_info},
 };
 
 pub async fn graph_sse_handler(
     state: Extension<Arc<Mutex<System>>>,
 ) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
+    let mut is_start = true;
     let stream = stream::repeat_with(move || {
+        if is_start {
+            is_start = false;
+            return Event::default().data("\n\n\n\n\n")
+        }
+        let mut system = state.0.try_lock().unwrap();
 
-        let mut system = state.0.lock();
-        let system = system.as_deref_mut().unwrap();
-
-        let info = get_info(system);
+        let info = get_info(&mut system);
 
         Event::default().data(display::graph::render(info))
     })
