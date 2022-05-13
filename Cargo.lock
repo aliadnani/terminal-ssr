@@ -3,6 +3,12 @@
 version = 3
 
 [[package]]
+name = "ansi-escapes"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7e3c0daaaae24df5995734b689627f8fa02101bc5bbc768be3055b66a010d7af"
+
+[[package]]
 name = "ansi_term"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -719,14 +725,15 @@ dependencies = [
 name = "terminal-ssr"
 version = "0.1.0"
 dependencies = [
+ "ansi-escapes",
  "axum",
  "futures",
- "parking_lot",
  "serde",
  "serde_json",
  "sysinfo",
  "tokio",
  "tokio-stream",
+ "tower-http",
  "tracing",
  "tracing-subscriber",
  "yansi",
@@ -815,9 +822,9 @@ dependencies = [
 
 [[package]]
 name = "tower-http"
-version = "0.3.2"
+version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e980386f06883cf4d0578d6c9178c81f68b45d77d00f2c2c1bc034b3439c2c56"
+checksum = "7d342c6d58709c0a6d48d48dabbb62d4ef955cf5f0f3bbfd845838e7ae88dbae"
 dependencies = [
  "bitflags",
  "bytes",
@@ -830,6 +837,7 @@ dependencies = [
  "tower",
  "tower-layer",
  "tower-service",
+ "tracing",
 ]
 
 [[package]]

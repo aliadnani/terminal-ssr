@@ -7,38 +7,62 @@ fn progress_bar(progress: &f32) -> String {
     "█".repeat(shaded_blocks) + &"▒".repeat(50 - shaded_blocks)
 }
 
-pub fn render(info: SystemInfo) -> String {
-    // `\x1B[2K` clears the line - removes 'data:'
-    // `\x1B[1000D` sets cursor backwards
-    // `\x1B[8A` sets the cursor up 8 lines up
-    let clear_screen = format!("\x1B[2K\x1B[1000D\x1B[8A");
+fn clear_line_string(num_lines: u16) -> String {
+    format!(
+        "{}{}",
+        ansi_escapes::EraseLine,
+        ansi_escapes::EraseLines(num_lines)
+    )
+}
 
+pub fn render(info: SystemInfo) -> String {
+    // This doesn't work within docker :(
     let header = format!(
         "{}",
-        Paint::cyan(format!(
-            "\x1B[1000DDevice: {} @ {}",
-            info.host_name, info.os
-        )),
+        Paint::cyan(format!("Device: {} @ {}", info.host_name, info.os)),
     );
     let uptime = format!(
         "{}",
-        Paint::yellow(format!("\x1B[1000DUptime:  {}s", &info.uptime.to_string())),
-    );
-    let cpu_stats = format!(
-        "{}\n\x1B[1000D{}",
-        Paint::magenta(format!("\x1B[1000DCPU: {}%", &info.cpu_usage.to_string())),
-        progress_bar(&info.cpu_usage)
-    );
-    let memory_stats = format!(
-        "{}\n\x1B[1000D{}",
-        Paint::red(format!(
-            "\x1B[1000DMemory: {}%",
-            &info.memory_usage.to_string()
+        Paint::yellow(format!(
+            "Uptime: {}s ≈ {:.5}hr ≈ {:.5}d",
+            &info.uptime.to_string(),
+            ((info.uptime as f32) / 3600.0).to_string(),
+            ((info.uptime as f32) / (3600.0 * 24.0)).to_string()
         )),
-        progress_bar(&info.memory_usage)
     );
 
-    let graph = vec![clear_screen, header, uptime, cpu_stats, memory_stats];
+    let cpu_text = format!(
+        "{}",
+        Paint::magenta(format!("CPU: {:.5}%", &info.cpu_usage.to_string())),
+    );
+    let cpu_bar = progress_bar(&info.cpu_usage);
+
+    let memory_text = format!(
+        "{}",
+        Paint::red(format!("Memory: {:.5}%", &info.memory_usage.to_string()))
+    );
+    let memory_bar = progress_bar(&info.memory_usage);
+
+    let graph = vec![header, uptime, cpu_text, cpu_bar, memory_text, memory_bar];
+
+    let mut graph = graph
+        .iter()
+        .map(|line| {
+            format!(
+                "{}{}{}",
+                ansi_escapes::EraseLine,
+                ansi_escapes::CursorLeft,
+                line
+            )
+        })
+        .collect::<Vec<String>>();
+
+    graph[0] = format!(
+        "{}{}",
+        // Clear the extra 2 lines cURL puts between SSE data
+        clear_line_string((graph.len() as u16) + 2),
+        graph[0]
+    );
 
     graph.join("\n")
 }
