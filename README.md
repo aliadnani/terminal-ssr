@@ -9,5 +9,5 @@ Server side rendered terminal dashboards
 cargo run --quiet
 
 # Render output
- curl localhost:8910/sse -s -N > /tmp/output.txt | watch tail -n 8 /tmp/output.txt 
+curl localhost:8910/info
 ```
