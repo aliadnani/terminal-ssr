@@ -28,7 +28,7 @@ pub async fn graph_sse_handler(
         // Need to add some newlines on start - otherwise previous terminal buffer will be overwritten
         if is_start {
             is_start = false;
-            let newlines = "\n".repeat(disp.split('\n').count());
+            let newlines = "\n".repeat(disp.split('\n').count() - 1);
             return Event::default().data(newlines);
         }
 

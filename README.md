@@ -1,6 +1,6 @@
 # Terminal SSR
 
-Server side rendered terminal dashboards
+Server side rendered terminal dashboards via curl & SSE
 
 ## Usage
 
@@ -11,3 +11,5 @@ cargo run --quiet
 # Render output
 curl localhost:8910/info
 ```
+
+![terminal-output](./terminal-output.png)
