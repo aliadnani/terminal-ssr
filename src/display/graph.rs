@@ -15,33 +15,38 @@ fn clear_line_string(num_lines: u16) -> String {
     )
 }
 
+/// Generate the system info string to be printed to stdout
+/// Also clears out the previous system info using ANSI escape codes 
 pub fn render(info: SystemInfo) -> String {
     // This doesn't work within docker :(
-    let header = format!(
-        "{}",
-        Paint::cyan(format!("Device: {} @ {}", info.host_name, info.os)),
-    );
+    let header = format!("{}", format!("Device: {} @ {}", info.host_name, info.os));
+    let header = header.cyan();
+
     let uptime = format!(
         "{}",
-        Paint::yellow(format!(
+        format!(
             "Uptime: {}s ≈ {:.5}hr ≈ {:.5}d",
             &info.uptime.to_string(),
             ((info.uptime as f32) / 3600.0).to_string(),
             ((info.uptime as f32) / (3600.0 * 24.0)).to_string()
-        )),
+        ),
     );
+    let uptime = uptime.yellow();
 
-    let cpu_text = format!(
-        "{}",
-        Paint::magenta(format!("CPU: {:.5}%", &info.cpu_usage.to_string())),
-    );
+    let cpu_text = format!("{}", format!("CPU: {:.5}%", &info.cpu_usage.to_string()),);
+    let cpu_text = cpu_text.magenta();
+
     let cpu_bar = progress_bar(&info.cpu_usage);
+    let cpu_bar = cpu_bar.white();
 
     let memory_text = format!(
         "{}",
-        Paint::red(format!("Memory: {:.5}%", &info.memory_usage.to_string()))
+        format!("Memory: {:.5}%", &info.memory_usage.to_string())
     );
+    let memory_text = memory_text.red();
+
     let memory_bar = progress_bar(&info.memory_usage);
+    let memory_bar = memory_bar.white();
 
     let graph = vec![header, uptime, cpu_text, cpu_bar, memory_text, memory_bar];
 

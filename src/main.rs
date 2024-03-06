@@ -1,53 +1,55 @@
-use std::{
-    net::SocketAddr,
-    sync::{Arc, Mutex},
-    time::Duration,
-};
+use std::{sync::Arc, time::Duration};
 
-use axum::{routing::get, Extension, Router, Server};
-use sysinfo::{System, SystemExt};
-use tokio::time::sleep;
+use axum::{routing::get, Router};
+use sysinfo::System;
+use tokio::sync::Mutex;
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::{prelude::__tracing_subscriber_SubscriberExt, util::SubscriberInitExt};
 
+use crate::{config::config::Config, telemetry::sys::CachingSystemInfoService};
+
 mod api;
+mod config;
 mod display;
 mod telemetry;
 
 #[tokio::main]
 async fn main() {
+    // Load Config
+    let app_config = Config::load_config_from_env_with_defaults();
+
     // Logging
     tracing_subscriber::registry()
-        .with(tracing_subscriber::EnvFilter::new(
-            std::env::var("RUST_LOG").unwrap_or_else(|_| "info".into()),
-        ))
+        .with(tracing_subscriber::EnvFilter::new(&app_config.rust_log))
         .with(tracing_subscriber::fmt::layer())
         .init();
 
+    tracing::info!("Starting 'terminal-ssr' with config: {:?}", &app_config);
+
     // System info
-    let mut sys = System::new_all();
+    tracing::info!("Initializing system info service.");
+    let system = Arc::new(Mutex::new(System::new_all()));
+    let system_info_service = Arc::new(Mutex::new(CachingSystemInfoService::new(system).await));
 
-    tracing::info!("Starting system info worker");
-    for _ in 0..5 {
-        // Refresh several times as documentation says first readings won't be accurate
-        sys.refresh_all();
-        sleep(Duration::from_millis(200)).await;
-    }
-
-    let sys = Arc::new(Mutex::new(sys));
+    tracing::info!("Starting system info scheduled background refresh process.");
+    let _ = CachingSystemInfoService::schedule_refresh(
+        system_info_service.clone(),
+        Duration::from_millis(500),
+    );
 
     // Server
     let app = Router::new()
         .route("/info", get(api::server::graph_sse_handler))
-        .layer(Extension(sys))
+        .with_state(system_info_service)
         .layer(TraceLayer::new_for_http());
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], 8910));
+    let host = &app_config.server_host;
 
-    tracing::info!("Server started! Listening on: {}", addr);
+    let listener = tokio::net::TcpListener::bind(host).await.unwrap();
 
-    Server::bind(&addr)
-        .serve(app.into_make_service())
+    tracing::info!("Server started! Listening on: {}", host);
+
+    axum::serve(listener, app.into_make_service())
         .await
         .unwrap();
 }
