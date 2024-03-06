@@ -1,6 +1,6 @@
 [package]
 name = "terminal-ssr"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 description = "Server side rendered terminal dashboards"
 license = "MIT"
@@ -16,7 +16,7 @@ tokio =  { version = "1.18.0", features = ["full"] }
 axum = "0.7.4"
 tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
-tower-http = { version = "0.5.2", features = ["trace"] }
+tower-http = { version = "0.5.2", features = ["trace", "timeout"] }
 futures = "0.3.30"
 tokio-stream = "0.1.8"
 

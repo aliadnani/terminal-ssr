@@ -16,7 +16,7 @@ fn clear_line_string(num_lines: u16) -> String {
 }
 
 /// Generate the system info string to be printed to stdout
-/// Also clears out the previous system info using ANSI escape codes 
+/// Also clears out the previous system info using ANSI escape codes
 pub fn render(info: SystemInfo) -> String {
     // This doesn't work within docker :(
     let header = format!("{}", format!("Device: {} @ {}", info.host_name, info.os));

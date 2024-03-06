@@ -909,7 +909,7 @@ dependencies = [
 
 [[package]]
 name = "terminal-ssr"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "ansi-escapes",
  "axum",
@@ -1016,6 +1016,7 @@ dependencies = [
  "http-body",
  "http-body-util",
  "pin-project-lite",
+ "tokio",
  "tower-layer",
  "tower-service",
  "tracing",

@@ -3,10 +3,12 @@ use std::{sync::Arc, time::Duration};
 use axum::{routing::get, Router};
 use sysinfo::System;
 use tokio::sync::Mutex;
-use tower_http::trace::TraceLayer;
+use tower_http::{timeout::TimeoutLayer, trace::TraceLayer};
 use tracing_subscriber::{prelude::__tracing_subscriber_SubscriberExt, util::SubscriberInitExt};
 
-use crate::{config::config::Config, telemetry::sys::CachingSystemInfoService};
+use crate::{
+    api::server::shutdown_signal, config::config::Config, telemetry::sys::CachingSystemInfoService,
+};
 
 mod api;
 mod config;
@@ -41,7 +43,10 @@ async fn main() {
     let app = Router::new()
         .route("/info", get(api::server::graph_sse_handler))
         .with_state(system_info_service)
-        .layer(TraceLayer::new_for_http());
+        .layer((
+            TraceLayer::new_for_http(),
+            TimeoutLayer::new(Duration::from_secs(5)),
+        ));
 
     let host = &app_config.server_host;
 
@@ -50,6 +55,7 @@ async fn main() {
     tracing::info!("Server started! Listening on: {}", host);
 
     axum::serve(listener, app.into_make_service())
+        .with_graceful_shutdown(shutdown_signal())
         .await
         .unwrap();
 }

@@ -5,7 +5,7 @@ use axum::{
     response::{sse::Event, Sse},
 };
 use futures::{stream::Stream, StreamExt};
-use tokio::sync::Mutex;
+use tokio::{signal, sync::Mutex};
 
 use crate::{display, telemetry::sys::SystemInfoService};
 
@@ -19,7 +19,7 @@ pub async fn get_event_string(
 
     // render(info) generates a string that clears out the previous output
     // On the first run where there is no previous output, it will clear the unrelated lines above
-    // hence we need to pad the terminal with newlines on the first run 
+    // hence we need to pad the terminal with newlines on the first run
     if is_start {
         let newlines = "\n".repeat(disp.split('\n').count() + 1) + &disp;
         return Event::default().data(newlines);
@@ -45,4 +45,28 @@ pub async fn graph_sse_handler(
             .map(Ok);
 
     Sse::new(stream)
+}
+
+pub async fn shutdown_signal() {
+    let ctrl_c = async {
+        signal::ctrl_c()
+            .await
+            .expect("failed to install Ctrl+C handler");
+    };
+
+    #[cfg(unix)]
+    let terminate = async {
+        signal::unix::signal(signal::unix::SignalKind::terminate())
+            .expect("failed to install signal handler")
+            .recv()
+            .await;
+    };
+
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
+    tokio::select! {
+        _ = ctrl_c => {},
+        _ = terminate => {},
+    }
 }

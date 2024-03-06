@@ -19,13 +19,14 @@ impl Config {
             .ok()
             .and_then(|s| s.parse::<i32>().ok())
             .unwrap_or(1000);
-        let rust_log = env::var("RUST_LOG").unwrap_or("terminal_ssr=debug,tower_http=debug,axum::rejection=trace".to_string());
+        let rust_log = env::var("RUST_LOG")
+            .unwrap_or("terminal_ssr=debug,tower_http=debug,axum::rejection=trace".to_string());
 
         Config {
             server_host,
             sse_refresh_interval,
             sysinfo_refresh_interval_ms,
-            rust_log
+            rust_log,
         }
     }
 }
