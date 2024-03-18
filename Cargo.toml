@@ -4,6 +4,7 @@ version = "0.1.5"
 edition = "2021"
 description = "Server side rendered terminal dashboards"
 license = "MIT"
+repository = "https://github.com/aliadnani/terminal-ssr"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
